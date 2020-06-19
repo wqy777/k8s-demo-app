@@ -1,13 +1,13 @@
 pipeline {
   parameters {
-    string(name: 'NEXUS_URL', defaultValue: 'nexus.apps.kubernetes.local', description: 'The Nexus server URL')
+    string(name: 'NEXUS_URL', defaultValue: 'm2.dev.whitilied.com', description: 'The Nexus server URL')
     string(name: 'MAVEN_REPO_NAME', defaultValue: 'maven-releases', description: 'The Maven repo on Nexus to push artifacts to')
-    string(name: 'NEXUS_CREDENTIALS', defaultValue: 'jenkins-nexus', description: 'The Jenkins credentials to use when authenticating on Nexus')
-    string(name: 'NEXUS_PROTO', defaultValue: 'http', description: 'The protocol to employ when connecting to Nexus (http,https)')
+    string(name: 'NEXUS_CREDENTIALS', defaultValue: 'nexus', description: 'The Jenkins credentials to use when authenticating on Nexus')
+    string(name: 'NEXUS_PROTO', defaultValue: 'https', description: 'The protocol to employ when connecting to Nexus (http,https)')
     string(name: 'SONAR_CREDS', defaultValue: 'jenkins-sonar', description: 'The Jenkins credentials to use when authenticating on SonarQube')
     string(name: 'SONAR_INSTALLATION', defaultValue: 'jenkins-sonar', description: 'The SonarQube installation name')
     string(name: 'BUILD_NAMESPACE', defaultValue: 'jenkins', description: 'The namespace in which builds are performed')
-    string(name: 'REGISTRY_URL', defaultValue: 'registry.apps.kubernetes.local', description: 'The image registry url')
+    string(name: 'REGISTRY_URL', defaultValue: 'harboar.dev.whitilied.com', description: 'The image registry url')
     string(name: 'DBUSER', defaultValue: 'hibernate', description: 'Username for the test db')
     string(name: 'DBPASS', defaultValue: 'hibernate', description: 'Password of the test user')
   }
