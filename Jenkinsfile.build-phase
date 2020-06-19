@@ -201,13 +201,15 @@ metadata:
 spec:
   containers:
     - name: jnlp
-      image: URL_PLACEHOLDER/maven-agent:latest
+      image: harbor.dev.whitilied.com/dev/maven-agent
       imagePullPolicy: IfNotPresent
       env:
       - name: POD_IP
         valueFrom:
           fieldRef:
             fieldPath: status.podIP
+        imagePullSecrets:
+        - name: harbor
     """
   return mavenYaml.replaceAll(~/URL_PLACEHOLDER/, registryUrl)
 }
