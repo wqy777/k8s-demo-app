@@ -1,0 +1,93 @@
+pipeline {
+  parameters {
+    string(name: 'NEXUS_URL', defaultValue: 'm2.dev.whitilied.com', description: 'The Nexus server URL')
+    string(name: 'MAVEN_REPO_NAME', defaultValue: 'maven-releases', description: 'The Maven repo on Nexus to push artifacts to')
+    string(name: 'NEXUS_CREDENTIALS', defaultValue: 'nexus', description: 'The Jenkins credentials to use when authenticating on Nexus')
+    string(name: 'NEXUS_PROTO', defaultValue: 'https', description: 'The protocol to employ when connecting to Nexus (http,https)')
+    string(name: 'SONAR_CREDS', defaultValue: 'jenkins-sonar', description: 'The Jenkins credentials to use when authenticating on SonarQube')
+    string(name: 'SONAR_INSTALLATION', defaultValue: 'jenkins-sonar', description: 'The SonarQube installation name')
+    string(name: 'BUILD_NAMESPACE', defaultValue: 'jenkins', description: 'The namespace in which builds are performed')
+    string(name: 'REGISTRY_URL', defaultValue: 'harbor.dev.whitilied.com', description: 'The image registry url')
+    string(name: 'DBUSER', defaultValue: 'hibernate', description: 'Username for the test db')
+    string(name: 'DBPASS', defaultValue: 'hibernate', description: 'Password of the test user')
+  }
+
+  agent {
+    kubernetes {
+      label 'jenkins-slave-sbt'
+      defaultContainer 'jnlp'
+      yaml k8sAgentPodYaml("${params.REGISTRY_URL}")
+    }
+  }
+
+  environment {
+    GROUP_ID = readMavenPom().getGroupId()
+    ARTIFACT_ID = readMavenPom().getArtifactId()
+    VERSION = readMavenPom().getVersion()
+    PACKAGING = readMavenPom().getPackaging()
+    BUILD_NS = "${params.BUILD_NAMESPACE}"
+    DBKIND = "postgresql"
+    DBHOST = "${env.BUILD_NS}-postgres-service-${env.BUILD_ID}"
+    DBPORT = "5432"
+    DBNAME = "hibernate_db"
+    DBUSER = "${params.DBUSER}"
+    DBPASS = "${params.DBPASS}"
+    FLYWAY_DEFAULT_SCHEMA = "dev_schema"
+    HIBERNATE_LOAD_FILE = "no-file"
+    DB_GENERATION = "none"
+    ORM_LOG = true
+    JDBC_MAX_SIZE = 8
+    JDBC_MIN_SIZE = 2
+    FLYWAY_MIGRATE_AT_START = true
+    FLYWAY_BASELINE_VERSION = "1.0.0"
+    FLYWAY_BASELINE_DESCRIPTION = "Initial"
+    FLYWAY_CONNECTION_RETRIES = 100
+    FLYWAY_MIGRATION_TABLE = "dev_history"
+    FLYWAY_MIGRATIONS_LOCATION = "db/migrations/dev"
+    FLYWAY_BASELINE_ON_MIGRATE = true
+  }
+
+  options {
+    timeout(time: 1, unit: 'HOURS')
+  }
+  
+  stages {
+
+    stage ("MVN: BUILD") {
+      steps {
+        container('jnlp') {
+          echo "Running sbt package... (${env.BUILD_ID})"
+          sh "sbt package"
+        }
+      }
+    }
+}
+
+def k8sAgentPodYaml(registryUrl) {
+  mavenYaml = """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    jenkins/kube-default: true
+    app: jenkins
+    component: agent
+spec:
+  containers:
+    - name: jnlp
+      image: URL_PLACEHOLDER/maven-agent:latest
+      imagePullPolicy: IfNotPresent
+      env:
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+        imagePullSecrets:
+        - name: harbor
+  volumes:
+        - name: nfs
+          persistentVolumeClaim:
+            claimName: dev-nfs-volume-claim
+    """
+  return mavenYaml.replaceAll(~/URL_PLACEHOLDER/, registryUrl)
+}

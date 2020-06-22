@@ -1,0 +1,18 @@
+[repositories]
+    aliyun-ivy:  https://maven.aliyun.com/repository/public/, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
+    aliyun-maven:  https://maven.aliyun.com/repository/public/
+    nexus-proxy: https://m2.dev.whitilied.com/repository/maven-central
+    atlassian-central: https://packages.atlassian.com/maven-public/
+    typesafe-release: https://dl.bintray.com/typesafe/maven-releases/
+    tpolecat-release: https://dl.bintray.com/tpolecat/maven/
+    kamon-release: https://dl.bintray.com/kamon-io/releases/
+    typesafe-ivy-release: https://dl.bintray.com/typesafe/ivy-releases/
+    typesafe: https://repo.typesafe.com/typesafe/ivy-releases/, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext], bootOnly
+    sonatype-oss-releases
+    jcenter: https://jcenter.bintray.com/
+    maven-ivy: 	https://repo1.maven.org/maven2/, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
+    maven-central
+    sonatype-oss-snapshots
+    sbt-plugin: https://repo.scala-sbt.org/scalasbt/sbt-plugin-releases/
+    sbt-plugin-repo: https://repo.scala-sbt.org/scalasbt/sbt-plugin-releases/, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
+

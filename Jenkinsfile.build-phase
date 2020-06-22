@@ -201,7 +201,7 @@ metadata:
 spec:
   containers:
     - name: jnlp
-      image: harbor.dev.whitilied.com/dev/maven-agent
+      image: URL_PLACEHOLDER/maven-agent:latest
       imagePullPolicy: IfNotPresent
       env:
       - name: POD_IP
