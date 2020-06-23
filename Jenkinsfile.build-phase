@@ -130,8 +130,8 @@ spec:
         valueFrom:
           fieldRef:
             fieldPath: status.podIP
-        imagePullSecrets:
-        - name: harbor
+  imagePullSecrets:
+    - name: harbor
     """
   return mavenYaml.replaceAll(~/URL_PLACEHOLDER/, registryUrl)
 }
