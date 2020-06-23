@@ -75,7 +75,7 @@ metadata:
 spec:
   containers:
     - name: jnlp
-      image: URL_PLACEHOLDER/maven-agent:latest
+      image: URL_PLACEHOLDER/dev/jenkins-sbt-agent:latest
       imagePullPolicy: IfNotPresent
       env:
       - name: POD_IP

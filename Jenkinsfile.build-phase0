@@ -69,6 +69,84 @@ pipeline {
         }
       }
     }
+
+    stage ('INVOKE: Deploy a Postgres Database for Unit Testing.') {
+      steps {
+        build job: 'postgres-database-pipeline', parameters: [
+            string(name: 'DBENV', value: "${env.BUILD_NS}"),
+            string(name: 'ACTION', value: "deploy"),
+            string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}"),
+            string(name: 'REGISTRY_URL', value: "${params.REGISTRY_URL}")
+          ]
+      }
+    }
+
+    stage ("MVN: UNIT TESTS") {
+      steps {
+        container('jnlp') {
+          echo "Running maven tests... (${env.BUILD_ID}) DB ENDPOINT: ${env.DBHOST}"
+          sh "./mvnw test"
+          echo "Archiving test results in JUnit format... (${env.BUILD_ID})"
+          junit '**/target/surefire-reports/TEST-*.xml'
+        }
+      }
+      post {
+        failure {
+          build job: 'postgres-database-pipeline', parameters: [
+            string(name: 'DBENV', value: "${env.BUILD_NS}"),
+            string(name: 'ACTION', value: "undeploy"),
+            string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}"),
+            string(name: 'REGISTRY_URL', value: "${params.REGISTRY_URL}")
+          ]
+        }
+      }
+    }
+
+    stage ('INVOKE: Undeploy the test database instance.') {
+      steps {
+        build job: 'postgres-database-pipeline', parameters: [
+            string(name: 'DBENV', value: "${env.BUILD_NS}"),
+            string(name: 'ACTION', value: "undeploy"),
+            string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}"),
+            string(name: 'REGISTRY_URL', value: "${params.REGISTRY_URL}")
+          ]
+      }
+    }
+
+    stage ("MVN: CODE COVERAGE") {
+      steps {
+        container('jnlp') {
+          echo "Running maven jacoco plugin... (${env.BUILD_ID})"
+          sh "./mvnw jacoco:report"
+          jacoco( 
+                execPattern: 'target/*.exec',
+                classPattern: 'target/classes',
+                sourcePattern: 'src/main/java',
+                exclusionPattern: 'src/test*'
+          )
+        }
+      }
+    }
+
+    stage ("SONAR: SONARQUBE ANALYSIS") {
+      steps {
+        container('jnlp') {
+          echo "Running maven sonarscanner... (${env.BUILD_ID})"
+          withSonarQubeEnv(credentialsId: "${params.SONAR_CREDS}", installationName: "${params.SONAR_INSTALLATION}") {
+            sh 'mvn sonar:sonar'
+          }
+        }
+      }
+    }
+
+    stage ("SONAR: WAIT FOR QUALITY GATE") {
+      steps {
+        container('jnlp') {
+          echo "Evaluating Code Quality Gate... (${env.BUILD_ID})"
+          waitForQualityGate abortPipeline: true
+        }
+      }
+    }
     
     stage ("MVN: PACKAGE") {
       steps {
